@@ -5,6 +5,7 @@ Also contains the io code to save the plots into the directory 'output'
 
 This file is Copyright (c) 2021 Joshua Lenander
 """
+import math
 import pandas
 import plotly.express as px
 
@@ -106,8 +107,49 @@ def plot_companies_and_firehouses(fire_companies: pandas.DataFrame, firehouses: 
         fig.show()
 
 
-def plot_companies_and_response_time(fire_companies_response_time: pandas.DataFrame, fig_year: int, output=True) -> None:
+# def plot_companies_and_response_time(fire_companies_response_time: pandas.DataFrame, fig_year: int, output=True) -> None:
+#     """Plot the fire companies and their average response times on a choropleth map.
+
+#     if <output> is True, instead of calling fig.show(), will save the plotly graph into
+#     the output directory as an html file.
+
+#     Preconditions:
+#         - fire_companies_response_time is a valid dataframe of the fire companies
+#         with the response_times from process_data.calc_companies_response_time
+#     """
+#     json_geom = _format_companies_for_plotly(fire_companies_response_time)
+
+#     fig = px.choropleth_mapbox(fire_companies_response_time,
+#                                geojson=json_geom,
+#                                locations='company_name',
+#                                featureidkey='properties.company',
+#                                title=f'Average Incident Response Times by Company for {fig_year}',
+#                                labels={
+#                                    'response_times': 'average_response_time'},
+#                                color='response_times',
+#                                color_continuous_scale=px.colors.sequential.thermal,
+#                                mapbox_style='carto-positron',
+#                                hover_data=['company_name', 'response_times'],
+#                                center={'lat': 40.70, 'lon': -74.0},
+#                                zoom=9,
+#                                opacity=1.0,
+#                                width=1280,
+#                                height=720)
+
+#     if output:
+#         fig.write_html(f'output/avg_response_time_{fig_year}.html')
+#     else:
+#         fig.show()
+
+
+def plot_companies_and_response_times_animated(fire_companies_response_time: pandas.DataFrame, 
+    fire_companies: pandas.DataFrame, output=True) -> None:
     """Plot the fire companies and their average response times on a choropleth map.
+
+    Separates the data by month using plotly's animation feature.
+
+    Input data should have a column fora piece of data's month and year.
+    Format of this column should be 
 
     if <output> is True, instead of calling fig.show(), will save the plotly graph into
     the output directory as an html file.
@@ -115,28 +157,38 @@ def plot_companies_and_response_time(fire_companies_response_time: pandas.DataFr
     Preconditions:
         - fire_companies_response_time is a valid dataframe of the fire companies
         with the response_times from process_data.calc_companies_response_time
+        - fire_companies is a valid dataframe of the fire companies from data_io.load_fire_companies_data
     """
-    json_geom = _format_companies_for_plotly(fire_companies_response_time)
+    json_geom = _format_companies_for_plotly(fire_companies)
+
+    # Find and round the minimum and maximum response times to the appropriate tens place
+    # for the range of color.
+    min_response = math.floor(fire_companies_response_time.response_times.min() / 10) * 10
+    max_response = math.ceil(fire_companies_response_time.response_times.max() / 10) * 10
+    color_range = [min_response, max_response]
 
     fig = px.choropleth_mapbox(fire_companies_response_time,
                                geojson=json_geom,
                                locations='company_name',
                                featureidkey='properties.company',
-                               title=f'Average Incident Response Times by Company for {fig_year}',
+                               title=f'Average Incident Response Times by Company By Month and Year',
+                               animation_frame='year',
+                               animation_group='company_name',
                                labels={
                                    'response_times': 'average_response_time'},
                                color='response_times',
                                color_continuous_scale=px.colors.sequential.thermal,
+                               range_color=color_range,
                                mapbox_style='carto-positron',
                                hover_data=['company_name', 'response_times'],
                                center={'lat': 40.70, 'lon': -74.0},
                                zoom=9,
                                opacity=1.0,
-                               width=1000,
-                               height=600)
+                               width=1280,
+                               height=720)
 
     if output:
-        fig.write_html(f'output/firehouses_and_companies_{fig_year}.html')
+        fig.write_html(f'output/avg_response_time_anim.html')
     else:
         fig.show()
 

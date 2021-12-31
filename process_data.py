@@ -68,7 +68,7 @@ def _generate_response_dataframe(alarm_boxes: pandas.DataFrame, incident_count: 
 
 
 def remove_outliers_average_response(avg_response: pandas.DataFrame) -> pandas.DataFrame:
-    """Removes outliers in the average response times dataframe
+    """Returns a new average response dataframe with outliers removed
 
     The following are considered outliers and are removed from the dataframe:
         - incident_count of < 6
@@ -77,6 +77,29 @@ def remove_outliers_average_response(avg_response: pandas.DataFrame) -> pandas.D
         - avg_response is a dataframe in the format specified by calc_average_response_times
     """
     return avg_response.drop(index=avg_response.loc[avg_response['incident_count'] <= 5].index)
+
+
+def remove_outliers_companies_response(companies_response: pandas.DataFrame) -> pandas.DataFrame:
+    """Returns a new company response times dataframe with outliers removed
+
+    Known outliers, Engine 70 and Ladder 53
+
+    FOLLOWING NOT IMPLEMENTED
+    The following are considered outliers and are removed from the dataframe:
+        - companies_response.response_times < 1.0
+        - companies_response.response_times > 2500.0
+
+    Preconditions:
+        - companies_response is a dataframe in the format specified by calc_companies_response_time
+    """
+    E70_indices = companies_response.loc[companies_response.company_name == 'Engine 70'].index
+    L53_indices = companies_response.loc[companies_response.company_name == 'Ladder 53'].index
+    
+    companies_response = companies_response.drop(E70_indices)
+    companies_response = companies_response.drop(L53_indices)
+
+    print('Have not implemented avg_response >1.0 or <2500.0')
+    return companies_response
 
 
 def convert_geojson_to_shapely(multipolygon: dict) -> MultiPolygon:
@@ -192,3 +215,22 @@ def _get_shapely_geometry(fire_companies: pandas.DataFrame) -> dict[str, MultiPo
     for _, row in fire_companies.iterrows():
         shapes[row.company_name] = convert_geojson_to_shapely(row.the_geom)
     return shapes
+
+
+def concat_company_responses(companies_response_by_year: dict[int, pandas.DataFrame]) -> pandas.DataFrame:
+    """Return a single dataframe of company response data by year
+    Returned dataframe contains a column "year" that points to what year the data is for.
+    Modifies each original dataframe to include the year column.
+
+    Input dictionary companies_response_times_by_year has the year as the key pointing to a
+    dataframe of the format specified in calc_companies_response_time
+
+    Used for plotly animation of the response time data
+    """
+
+    for year in companies_response_by_year:
+        # A new column 'year' containing *year* is added to the dataframe pointed to by *year*
+        # *year* is an integer.
+        companies_response_by_year[year]['year'] = year
+    
+    return pandas.concat([companies_response_by_year[year] for year in companies_response_by_year], ignore_index=True)
