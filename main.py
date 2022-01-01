@@ -59,7 +59,6 @@ def main():
     plot_data.plot_companies_and_response_times_animated(company_responses_by_month, fire_companies, True)
     # plot_data.plot_companies_and_firehouses(fire_companies, firehouses, True)
 
-    # TODO remove geom from processed data and save company to boxes instead
 
 if __name__ == '__main__':
     main()

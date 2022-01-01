@@ -129,6 +129,8 @@ def calc_companies_response_time(fire_companies: pandas.DataFrame, alarm_box_res
         company_response_times.incident_count.at[company_name] = company_response_segment.incident_count.sum()
 
     firehouse_copy = fire_companies.copy()
+    # Drop unused field the_geom
+    firehouse_copy = firehouse_copy.drop(columns='the_geom')
     firehouse_copy['response_times'] = company_response_times.response_times.values
     firehouse_copy['incident_count'] = company_response_times.incident_count.values
     return firehouse_copy
