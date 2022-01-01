@@ -107,41 +107,6 @@ def plot_companies_and_firehouses(fire_companies: pandas.DataFrame, firehouses: 
         fig.show()
 
 
-# def plot_companies_and_response_time(fire_companies_response_time: pandas.DataFrame, fig_year: int, output=True) -> None:
-#     """Plot the fire companies and their average response times on a choropleth map.
-
-#     if <output> is True, instead of calling fig.show(), will save the plotly graph into
-#     the output directory as an html file.
-
-#     Preconditions:
-#         - fire_companies_response_time is a valid dataframe of the fire companies
-#         with the response_times from process_data.calc_companies_response_time
-#     """
-#     json_geom = _format_companies_for_plotly(fire_companies_response_time)
-
-#     fig = px.choropleth_mapbox(fire_companies_response_time,
-#                                geojson=json_geom,
-#                                locations='company_name',
-#                                featureidkey='properties.company',
-#                                title=f'Average Incident Response Times by Company for {fig_year}',
-#                                labels={
-#                                    'response_times': 'average_response_time'},
-#                                color='response_times',
-#                                color_continuous_scale=px.colors.sequential.thermal,
-#                                mapbox_style='carto-positron',
-#                                hover_data=['company_name', 'response_times'],
-#                                center={'lat': 40.70, 'lon': -74.0},
-#                                zoom=9,
-#                                opacity=1.0,
-#                                width=1280,
-#                                height=720)
-
-#     if output:
-#         fig.write_html(f'output/avg_response_time_{fig_year}.html')
-#     else:
-#         fig.show()
-
-
 def plot_companies_and_response_times_animated(fire_companies_response_time: pandas.DataFrame, 
     fire_companies: pandas.DataFrame, output=True) -> None:
     """Plot the fire companies and their average response times on a choropleth map.
@@ -188,7 +153,7 @@ def plot_companies_and_response_times_animated(fire_companies_response_time: pan
                                height=720)
 
     if output:
-        fig.write_html(f'output/avg_response_time_anim.html')
+        fig.write_html(f'output/avg_response_time_anim.html', auto_play=False)
     else:
         fig.show()
 
