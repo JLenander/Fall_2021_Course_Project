@@ -11,14 +11,14 @@ import pandas
 from shapely.geometry import MultiPolygon, Point, Polygon
 
 
-def calc_average_response_times(incidents: pandas.DataFrame, alarm_boxes: pandas.DataFrame, start=datetime(2016, 1, 1), end=datetime(2021, 5, 6)) -> pandas.DataFrame:
-    """Calculate the average response time (in seconds) for each alarm box in alarm_boxes
-    restrict calculation to times after <start> and before <end>.
+def get_response_time_per_alarm_box(incidents: pandas.DataFrame, alarm_boxes: pandas.DataFrame, start=datetime(2016, 1, 1), end=datetime(2021, 5, 6)) -> pandas.DataFrame:
+    """Extract the sum of the response times (in seconds) for each alarm box in alarm_boxes
+    restrict data to times after <start> and before <end>.
     <start> bound is inclusive
     <end> bound is exclusive
 
     Returns a dataframe with columns alarm_box_code, alarm_box_location, latitude, longitude
-        alarm_box_incident_count, and alarm_box_average_response
+        incident_count, and response_time_sum
 
     Preconditions:
         - start < end
@@ -27,7 +27,7 @@ def calc_average_response_times(incidents: pandas.DataFrame, alarm_boxes: pandas
     # Create a series mapping the alarm box codes to an integer of the incident count
     incident_count = pandas.Series(data=0, index=alarm_boxes.alarm_box_code)
 
-    # Create a series mappping the alarm box codes to a sum of the incident response times
+    # Create a series mapping the alarm box codes to a sum of the incident response times
     incident_rspns_sum = pandas.Series(data=0, index=alarm_boxes.alarm_box_code)
 
     # Locate the specific range of incidents
@@ -41,31 +41,23 @@ def calc_average_response_times(incidents: pandas.DataFrame, alarm_boxes: pandas
             incident_count[code] += 1
             incident_rspns_sum[code] += incident.incident_response_seconds_qy
 
-    avg_response = pandas.DataFrame({'alarm_box_code': alarm_boxes.alarm_box_code, 'alarm_box_location': alarm_boxes.alarm_box_location,
-                                    'latitude': alarm_boxes.latitude, 'longitude': alarm_boxes.longitude, 'incident_count': incident_count.values})
+    alarm_box_response = pandas.DataFrame({'alarm_box_code': alarm_boxes.alarm_box_code, 'alarm_box_location': alarm_boxes.alarm_box_location,
+                                    'latitude': alarm_boxes.latitude, 'longitude': alarm_boxes.longitude, 'incident_count': incident_count.values, 
+                                    'response_time_sum': incident_rspns_sum.values})
 
-    # Handle divison of zeros by substituting incident counts of 0 with 1. The incident counts are
-    # already loaded into the dataframe so this operation does not affect avg_response counts.
-    # Incident counts of 0 correspond to response sums of 0 so average response should be 0/1 = 0.0
-    incident_count.replace(to_replace=0, value=1, inplace=True)
+    return alarm_box_response
 
-    # Perform the average calculation
-    avg_response['average_response_time'] = avg_response.apply(
-        axis='columns', func=lambda row: incident_rspns_sum.at[row.alarm_box_code] / incident_count[row.alarm_box_code])
+# NOTE no longer correct for this implementation
+# def remove_outliers_average_response(avg_response: pandas.DataFrame, min_incident_count=3) -> pandas.DataFrame:
+#     """Returns a new average response dataframe with outliers removed
 
-    return avg_response
+#     The following are considered outliers and are removed from the dataframe:
+#         - incident_count of < min_incident_count
 
-
-def remove_outliers_average_response(avg_response: pandas.DataFrame, min_incident_count=3) -> pandas.DataFrame:
-    """Returns a new average response dataframe with outliers removed
-
-    The following are considered outliers and are removed from the dataframe:
-        - incident_count of < min_incident_count
-
-    Preconditions:
-        - avg_response is a dataframe in the format specified by calc_average_response_times
-    """
-    return avg_response.drop(index=avg_response.loc[avg_response['incident_count'] < min_incident_count].index)
+#     Preconditions:
+#         - avg_response is a dataframe in the format specified by calc_average_response_times
+#     """
+#     return avg_response.drop(index=avg_response.loc[avg_response['incident_count'] < min_incident_count].index)
 
 
 def remove_outliers_companies_response(companies_response: pandas.DataFrame) -> pandas.DataFrame:
@@ -73,7 +65,6 @@ def remove_outliers_companies_response(companies_response: pandas.DataFrame) -> 
 
     Known outliers, Engine 70 and Ladder 53
 
-    FOLLOWING NOT IMPLEMENTED
     The following are considered outliers and are removed from the dataframe:
         - companies_response.response_times < 1.0
         - companies_response.response_times > 2500.0
@@ -87,7 +78,6 @@ def remove_outliers_companies_response(companies_response: pandas.DataFrame) -> 
     companies_response = companies_response.drop(E70_indices)
     companies_response = companies_response.drop(L53_indices)
 
-    print('Have not implemented avg_response >1.0 or <2500.0')
     return companies_response
 
 
@@ -106,12 +96,13 @@ def convert_geojson_to_shapely(multipolygon: dict) -> MultiPolygon:
     return MultiPolygon(shapely_polygons)
 
 
-def calc_companies_response_time(fire_companies: pandas.DataFrame, avg_response: pandas.DataFrame,
+def calc_companies_response_time(fire_companies: pandas.DataFrame, alarm_box_response: pandas.DataFrame,
     company_to_boxes: dict[str, list[str]]) -> pandas.DataFrame:
     """Calculate the average response time for each fire company
-    Returns a copy of fire_companies with a new column for average response time
+    Returns a copy of fire_companies with a new column for average response time and a new column
+    for the number of incidents recorded for that company.
 
-    <avg_response> is a dataframe in the format of the output of calc_average_response_time
+    <alarm_box_response> is a dataframe in the format of the output of get_response_time_per_alarm_box
     <company_to_boxes> is a dictionary in the format of the output of map_companies_to_alarm_boxes
 
     Each company's average response time is the average of each alarm box's response time
@@ -119,27 +110,29 @@ def calc_companies_response_time(fire_companies: pandas.DataFrame, avg_response:
 
     Preconditions:
         - fire_companies is a valid dataframe of the fire companies
-        - avg_response is a valid dataframe of the average response time per alarm box
+        - alarm_box_response is a valid dataframe of the response time data per alarm box
         - company_to_boxes is a dictionary mapping the fire companies name to a list of alarm boxes
             located within that company. See map_companies_to_alarm_boxes
     """
-    company_response_times = pandas.Series(data=0, index=list(company_to_boxes.keys()))
-    for company_name in company_to_boxes:
-        company_average_response = 0.0
+    # DataFrame connecting company name to the average response times for the company and to incident counts.
+    company_response_times = pandas.DataFrame(data={'response_times': 0.0, 'incident_count': 0}, 
+                    index=list(company_to_boxes.keys()), columns=['response_times', 'incident_count'])
 
-        # The segment of the response times corresponding to the company
-        company_response_segment = avg_response.loc[avg_response['alarm_box_code'].isin(
+    for company_name in company_to_boxes:
+        # The segment of the alarm box response times corresponding to the company
+        company_response_segment = alarm_box_response.loc[alarm_box_response['alarm_box_code'].isin(
             company_to_boxes[company_name])]
 
         # Avoid divide by 0
-        if len(company_response_segment) > 0:
-            company_average_response = company_response_segment.average_response_time.sum() / \
-                len(company_response_segment)
-
-        company_response_times.at[company_name] = company_average_response
+        if company_response_segment.response_time_sum.sum() > 0:
+            avg_time = company_response_segment.response_time_sum.sum() / company_response_segment.incident_count.sum()
+            company_response_times.response_times.at[company_name] = avg_time
+        
+        company_response_times.incident_count.at[company_name] = company_response_segment.incident_count.sum()
 
     firehouse_copy = fire_companies.copy()
-    firehouse_copy['response_times'] = company_response_times.values
+    firehouse_copy['response_times'] = company_response_times.response_times.values
+    firehouse_copy['incident_count'] = company_response_times.incident_count.values
     return firehouse_copy
 
 

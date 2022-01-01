@@ -145,7 +145,7 @@ def plot_companies_and_response_times_animated(fire_companies_response_time: pan
                                color_continuous_scale=px.colors.sequential.thermal,
                                range_color=color_range,
                                mapbox_style='carto-positron',
-                               hover_data=['company_name', 'response_times'],
+                               hover_data=['company_name', 'response_times', 'incident_count'],
                                center={'lat': 40.70, 'lon': -74.0},
                                zoom=9,
                                opacity=1.0,
