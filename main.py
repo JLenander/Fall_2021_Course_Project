@@ -53,6 +53,9 @@ def main():
     # # Load company_responses_by_month from file
     # company_responses_by_month = data_io.load_data_frame('data/processed/company_responses_by_month.csv')
 
+    # Optionally remove outliers in response data. This will leave holes in the map for regions with no data
+    company_responses_by_month = process_data.remove_outliers_companies_response(company_responses_by_month)
+
     plot_data.plot_companies_and_response_times_animated(company_responses_by_month, fire_companies, True)
     # plot_data.plot_companies_and_firehouses(fire_companies, firehouses, True)
 

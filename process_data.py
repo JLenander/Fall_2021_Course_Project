@@ -63,8 +63,6 @@ def get_response_time_per_alarm_box(incidents: pandas.DataFrame, alarm_boxes: pa
 def remove_outliers_companies_response(companies_response: pandas.DataFrame) -> pandas.DataFrame:
     """Returns a new company response times dataframe with outliers removed
 
-    Known outliers, Engine 70 and Ladder 53
-
     The following are considered outliers and are removed from the dataframe:
         - companies_response.response_times < 1.0
         - companies_response.response_times > 2500.0
@@ -72,11 +70,11 @@ def remove_outliers_companies_response(companies_response: pandas.DataFrame) -> 
     Preconditions:
         - companies_response is a dataframe in the format specified by calc_companies_response_time
     """
-    E70_indices = companies_response.loc[companies_response.company_name == 'Engine 70'].index
-    L53_indices = companies_response.loc[companies_response.company_name == 'Ladder 53'].index
-    
-    companies_response = companies_response.drop(E70_indices)
-    companies_response = companies_response.drop(L53_indices)
+    lower_bound_indices = companies_response.loc[companies_response.response_times < 1.0].index
+    upper_bound_indices = companies_response.loc[companies_response.response_times > 2500.0].index
+
+    companies_response = companies_response.drop(lower_bound_indices)
+    companies_response = companies_response.drop(upper_bound_indices)    
 
     return companies_response
 
