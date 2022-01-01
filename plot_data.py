@@ -172,7 +172,7 @@ def plot_companies_and_response_times_animated(fire_companies_response_time: pan
                                locations='company_name',
                                featureidkey='properties.company',
                                title=f'Average Incident Response Times by Company By Month and Year',
-                               animation_frame='year',
+                               animation_frame='date',
                                animation_group='company_name',
                                labels={
                                    'response_times': 'average_response_time'},

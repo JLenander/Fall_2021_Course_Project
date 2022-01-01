@@ -4,6 +4,9 @@ Contains the main project function
 
 This file is Copyright (c) 2021 Joshua Lenander
 """
+from datetime import datetime
+from dateutil.relativedelta import *
+
 import data_io
 import plot_data
 import process_data
@@ -11,41 +14,47 @@ import process_data
 
 def main():
     """The main block for the project
-    Should save 3 files into the output directory
+    Running should produce an output file in output/
     """
-    fire_companies = data_io.load_fire_companies_data()
     # firehouses = data_io.load_firehouse_data()
-    # incidents = data_io.load_incidents()
+    fire_companies = data_io.load_fire_companies_data()
     alarm_boxes = data_io.load_alarm_boxes()
+    incidents = data_io.load_incidents()
 
-    # avg_response_2018 = data_io.load_data_frame('data/processed/avg_response_2018.csv')
-    # avg_response_2019 = data_io.load_data_frame('data/processed/avg_response_2019.csv')
-    # avg_response_2020 = data_io.load_data_frame('data/processed/avg_response_2020.csv')
+    # Start and End bounds for the data range. Start bound is inclusive, end bound is exclusive.
+    start_date = datetime(2018,4,1)
+    end_date = datetime(2021,5,1) # Incident data only available until 2021/05/06
 
-    avg_responses = {year: data_io.load_data_frame(f'data/processed/avg_response_{year}.csv') 
-                          for year in {2018, 2019, 2020}}
+    # Dict mapping month to average response dataframe
+    avg_responses = {}
 
-    for year in avg_responses:
-        avg_responses[year] = process_data.remove_outliers_average_response(avg_responses[year])
+    # Calculate each month's average response
+    current_date = start_date
+    while current_date < end_date:
+        next_month = current_date + relativedelta(months=+1)
+        avg_responses[current_date] = process_data.calc_average_response_times(incidents, alarm_boxes, start=current_date, end=next_month)
+        current_date = next_month
 
-    # companies_2018 = process_data.calc_companies_response_time(fire_companies, alarm_boxes, avg_response_2018)
-    # companies_2019 = process_data.calc_companies_response_time(fire_companies, alarm_boxes, avg_response_2019)
-    # companies_2020 = process_data.calc_companies_response_time(fire_companies, alarm_boxes, avg_response_2020)
+    company_to_boxes = process_data.map_companies_to_alarm_boxes(fire_companies, alarm_boxes)
+    # Dict mapping the month to the company response dataframe
+    company_responses = {}
+    for date in avg_responses:
+        company_responses[date] = process_data.calc_companies_response_time(fire_companies, avg_responses[date], company_to_boxes)
+    
+    # Concatenate the results into one dataframe with a date column
+    company_responses_by_month = process_data.concat_company_responses(company_responses)
 
-    companies_response = {year: process_data.calc_companies_response_time(fire_companies, 
-                          alarm_boxes, avg_responses[year]) for year in {2018, 2019, 2020}}
+    # Date is a pandas timestamp object and needs to be converted to a string.
+    # Also trims the day from the timestamp.
+    company_responses_by_month.date = company_responses_by_month.date.apply(lambda timestamp: f'{timestamp.year}-{timestamp.month}')
 
+    # Save company_responses_by_month to file
+    data_io.save_data_frame(company_responses_by_month, 'data/processed/company_responses_by_month.csv')
+    # # Load company_responses_by_month from file
+    # company_responses_by_month = data_io.load_data_frame('data/processed/company_responses_by_month.csv')
 
+    plot_data.plot_companies_and_response_times_animated(company_responses_by_month, fire_companies, True)
     # plot_data.plot_companies_and_firehouses(fire_companies, firehouses, True)
-    # plot_data.plot_companies_and_response_time(companies_2018, 2018, True)
-    # plot_data.plot_companies_and_response_time(companies_2019, 2019, True)
-    # plot_data.plot_companies_and_response_time(companies_2020, 2020, True)
-
-    companies_response_with_date = process_data.concat_company_responses(companies_response)
-
-    companies_response_with_date = process_data.remove_outliers_companies_response(companies_response_with_date)
-
-    plot_data.plot_companies_and_response_times_animated(companies_response_with_date, fire_companies, True)
 
 if __name__ == '__main__':
     main()

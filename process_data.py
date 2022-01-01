@@ -202,20 +202,21 @@ def _get_shapely_geometry(fire_companies: pandas.DataFrame) -> dict[str, MultiPo
     return shapes
 
 
-def concat_company_responses(companies_response_by_year: dict[int, pandas.DataFrame]) -> pandas.DataFrame:
-    """Return a single dataframe of company response data by year
-    Returned dataframe contains a column "year" that points to what year the data is for.
-    Modifies each original dataframe to include the year column.
+def concat_company_responses(companies_response_by_month: dict[datetime, pandas.DataFrame]) -> pandas.DataFrame:
+    """Return a single dataframe of company response data by month
+    Returned dataframe contains a column "date" that points to what date the data is for.
+    Modifies each original dataframe to include the date column.
 
-    Input dictionary companies_response_times_by_year has the year as the key pointing to a
-    dataframe of the format specified in calc_companies_response_time
+    Input dictionary companies_response_times_by_month has a datetime object as the key pointing to a
+    dataframe of the format specified in calc_companies_response_time.
+
 
     Used for plotly animation of the response time data
     """
 
-    for year in companies_response_by_year:
-        # A new column 'year' containing *year* is added to the dataframe pointed to by *year*
-        # *year* is an integer.
-        companies_response_by_year[year]['year'] = year
+    for date in companies_response_by_month:
+        # A new column 'date' containing *date* is added to the dataframe pointed to by *date*
+        # *date* is a datetime object 
+        companies_response_by_month[date]['date'] = date
     
-    return pandas.concat([companies_response_by_year[year] for year in companies_response_by_year], ignore_index=True)
+    return pandas.concat([companies_response_by_month[date] for date in companies_response_by_month], ignore_index=True)
