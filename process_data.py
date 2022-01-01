@@ -106,26 +106,24 @@ def convert_geojson_to_shapely(multipolygon: dict) -> MultiPolygon:
     return MultiPolygon(shapely_polygons)
 
 
-def calc_companies_response_time(fire_companies: pandas.DataFrame, alarm_boxes: pandas.DataFrame,
-    avg_response: pandas.DataFrame) -> pandas.DataFrame:
+def calc_companies_response_time(fire_companies: pandas.DataFrame, avg_response: pandas.DataFrame,
+    company_to_boxes: dict[str, list[str]]) -> pandas.DataFrame:
     """Calculate the average response time for each fire company
     Returns a copy of fire_companies with a new column for average response time
 
     <avg_response> is a dataframe in the format of the output of calc_average_response_time
+    <company_to_boxes> is a dictionary in the format of the output of map_companies_to_alarm_boxes
 
     Each company's average response time is the average of each alarm box's response time
     contained within the company boundary
 
     Preconditions:
         - fire_companies is a valid dataframe of the fire companies
-        - alarm_boxes is a valid dataframe of the alarm boxes
         - avg_response is a valid dataframe of the average response time per alarm box
+        - company_to_boxes is a dictionary mapping the fire companies name to a list of alarm boxes
+            located within that company. See map_companies_to_alarm_boxes
     """
-    company_to_boxes = _map_companies_to_alarm_boxes(
-        fire_companies, alarm_boxes)
-
-    company_response_times = pandas.Series(
-        data=0, index=list(company_to_boxes.keys()))
+    company_response_times = pandas.Series(data=0, index=list(company_to_boxes.keys()))
     for company_name in company_to_boxes:
         company_average_response = 0.0
 
@@ -145,11 +143,9 @@ def calc_companies_response_time(fire_companies: pandas.DataFrame, alarm_boxes: 
     return firehouse_copy
 
 
-def _map_companies_to_alarm_boxes(fire_companies: pandas.DataFrame, alarm_boxes: pandas.DataFrame) -> dict[str, list[str]]:
+def map_companies_to_alarm_boxes(fire_companies: pandas.DataFrame, alarm_boxes: pandas.DataFrame) -> dict[str, list[str]]:
     """Maps the fire company boundaries to the alarm boxes located within
     Returns a dictionary mapping the company name to a list of alarm box codes
-
-    Helper for calc_companies_response_time
 
     Preconditions:
         - fire_companies is a valid dataframe of the fire companies
