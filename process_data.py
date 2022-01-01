@@ -23,60 +23,49 @@ def calc_average_response_times(incidents: pandas.DataFrame, alarm_boxes: pandas
     Preconditions:
         - start < end
     """
-    # Sort the dataframe to be ascending to allow for early return
-    incidents = incidents.sort_values('incident_datetime', ignore_index=True)
 
     # Create a series mapping the alarm box codes to an integer of the incident count
     incident_count = pandas.Series(data=0, index=alarm_boxes.alarm_box_code)
 
     # Create a series mappping the alarm box codes to a sum of the incident response times
-    incident_rspns_sum = pandas.Series(
-        data=0, index=alarm_boxes.alarm_box_code)
+    incident_rspns_sum = pandas.Series(data=0, index=alarm_boxes.alarm_box_code)
 
-    for _, incident in incidents.iterrows():
-        if incident.incident_datetime > end:
-            # Create the new dataframe and return the values.
-            return _generate_response_dataframe(alarm_boxes, incident_count, incident_rspns_sum)
-        elif incident.incident_datetime >= start:
-            if incident.alarm_box_code in incident_count:
-                # Update the accumulators
-                incident_count[incident.alarm_box_code] += 1
-                incident_rspns_sum[incident.alarm_box_code] += incident.incident_response_seconds_qy
+    # Locate the specific range of incidents
+    incidents_in_range = incidents.loc[incidents.incident_datetime >= start].loc[incidents.incident_datetime < end]
 
-    return _generate_response_dataframe(alarm_boxes, incident_count, incident_rspns_sum)
+    for incident in incidents_in_range.itertuples():
+        code = incident.alarm_box_code
+        
+        # Ignore alarm boxes we do not have location data for
+        if code in incident_count:
+            incident_count[code] += 1
+            incident_rspns_sum[code] += incident.incident_response_seconds_qy
 
-
-def _generate_response_dataframe(alarm_boxes: pandas.DataFrame, incident_count: pandas.Series, incident_rspns_sum: pandas.Series) -> pandas.DataFrame:
-    """Generate the pandas dataframe holding alarm box code, location, latitude, longitude,
-    incident count, and average response time from the incident_count and incident_rspns_sum series
-
-    Generates the return value of calc_average_response_times
-
-    Helper for calc_average_response_time
-    """
     avg_response = pandas.DataFrame({'alarm_box_code': alarm_boxes.alarm_box_code, 'alarm_box_location': alarm_boxes.alarm_box_location,
                                     'latitude': alarm_boxes.latitude, 'longitude': alarm_boxes.longitude, 'incident_count': incident_count.values})
 
     # Handle divison of zeros by substituting incident counts of 0 with 1. The incident counts are
     # already loaded into the dataframe so this operation does not affect avg_response counts.
     # Incident counts of 0 correspond to response sums of 0 so average response should be 0/1 = 0.0
-    incident_count = incident_count.replace(to_replace=0, value=1)
+    incident_count.replace(to_replace=0, value=1, inplace=True)
+
+    # Perform the average calculation
     avg_response['average_response_time'] = avg_response.apply(
         axis='columns', func=lambda row: incident_rspns_sum.at[row.alarm_box_code] / incident_count[row.alarm_box_code])
 
     return avg_response
 
 
-def remove_outliers_average_response(avg_response: pandas.DataFrame) -> pandas.DataFrame:
+def remove_outliers_average_response(avg_response: pandas.DataFrame, min_incident_count=3) -> pandas.DataFrame:
     """Returns a new average response dataframe with outliers removed
 
     The following are considered outliers and are removed from the dataframe:
-        - incident_count of < 6
+        - incident_count of < min_incident_count
 
     Preconditions:
         - avg_response is a dataframe in the format specified by calc_average_response_times
     """
-    return avg_response.drop(index=avg_response.loc[avg_response['incident_count'] <= 5].index)
+    return avg_response.drop(index=avg_response.loc[avg_response['incident_count'] < min_incident_count].index)
 
 
 def remove_outliers_companies_response(companies_response: pandas.DataFrame) -> pandas.DataFrame:

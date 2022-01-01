@@ -88,6 +88,8 @@ def load_incidents(filename='data/Fire_Incident_Dispatch_2016_to_2021.csv') -> p
     incidents = incidents.drop(axis='columns', labels=['policeprecinct', 'citycouncildistrict', 'communitydistrict', 'communityschooldistrict',
                                'congressionaldistrict', 'dispatch_response_seconds_qy', 'valid_dispatch_rspns_time_indc', 'valid_incident_rspns_time_indc'])
 
+    # ensure incidents sorted by incident_datetime
+    incidents = incidents.sort_values('incident_datetime', ignore_index=True)
     return incidents
 
 
