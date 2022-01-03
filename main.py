@@ -58,6 +58,7 @@ def main():
 
     plot_data.plot_companies_and_response_times_animated(company_responses_by_month, fire_companies, True)
     # plot_data.plot_companies_and_firehouses(fire_companies, firehouses, True)
+    # plot_data.plot_companies_and_alarm_boxes(fire_companies, alarm_boxes, True)
 
 
 if __name__ == '__main__':
