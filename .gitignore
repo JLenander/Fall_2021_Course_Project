@@ -1,0 +1,7 @@
+.vscode
+data/*
+!data/processed
+venv/
+output/
+other_links.txt
+__pycache__
