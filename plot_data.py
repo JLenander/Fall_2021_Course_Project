@@ -14,8 +14,7 @@ import plotly.graph_objects
 def plot_firehouses(firehouses: pandas.DataFrame, output=True) -> None:
     """Plot the firehouse locations on a scatter mapbox map using plotly.
 
-    if <output> is True, instead of calling fig.show(), will save the plotly graph into
-    the output directory as an html file.
+    if <output> is True, save the plotly graph into the output directory as an html file.
 
     Preconditions:
         - firehouses is a valid dataframe of the firehouses
@@ -29,17 +28,15 @@ def plot_firehouses(firehouses: pandas.DataFrame, output=True) -> None:
                             hover_data=['address', 'zipcode', 'neighborhood'],
                             zoom=10)
 
+    fig.show()
     if output:
         fig.write_html('output/firehouses.html')
-    else:
-        fig.show()
 
 
 def plot_alarm_boxes(alarm_boxes: pandas.DataFrame, output=True) -> None:
     """Plot the alarm boxes on a scatter mapbox using plotly
 
-    if <output> is True, instead of calling fig.show(), will save the plotly graph into
-    the output directory as an html file.
+    if <output> is True, save the plotly graph into the output directory as an html file.
 
     Preconditions:
         - alarm_boxes is a valid dataframe of the alarm boxes
@@ -53,10 +50,9 @@ def plot_alarm_boxes(alarm_boxes: pandas.DataFrame, output=True) -> None:
                             hover_data=['alarm_box_code', 'alarm_box_location'],
                             zoom=10)
 
+    fig.show()
     if output:
         fig.write_html('output/alarm_boxes.html')
-    else:
-        fig.show()
 
 
 def _get_companies_plot(fire_companies: pandas.DataFrame, opacity=1.0) -> plotly.graph_objects.Figure:
@@ -97,25 +93,22 @@ def _get_companies_plot(fire_companies: pandas.DataFrame, opacity=1.0) -> plotly
 def plot_companies(fire_companies: pandas.DataFrame, output=True, opacity=1.0) -> None:
     """Plot the fire company boundaries on a choropleth mapbox map using plotly.
 
-    if <output> is True, instead of calling fig.show(), will save the plotly graph into
-    the output directory as an html file.
+    if <output> is True, save the plotly graph into the output directory as an html file.
 
     Preconditions:
         - fire_companies is a valid dataframe of the fire companies
     """
     fig = _get_companies_plot(fire_companies, opacity)
 
+    fig.show()
     if output:
         fig.write_html(f'output/fire_companies_opacity_{int(opacity * 100)}_percent.html')
-    else:
-        fig.show()
 
 
 def plot_companies_and_alarm_boxes(fire_companies: pandas.DataFrame, alarm_boxes, output=True, opacity=1.0) -> None:
     """Plot the fire company boundaries and alarm box locations on a choropleth mapbox map using plotly.
 
-    if <output> is True, instead of calling fig.show(), will save the plotly graph into
-    the output directory as an html file.
+    if <output> is True, save the plotly graph into the output directory as an html file.
 
     Preconditions:
         - fire_companies is a valid dataframe of the fire companies
@@ -138,18 +131,16 @@ def plot_companies_and_alarm_boxes(fire_companies: pandas.DataFrame, alarm_boxes
     # Update titel
     fig.update_layout({'title': 'Fire Company boundaries and Alarm Box locations'})
 
+    fig.show()
     if output:
         fig.write_html(f'output/fire_companies_and_alarm_boxes_opacity_{int(opacity * 100)}_percent.html')
-    else:
-        fig.show()
 
 
 def plot_companies_and_firehouses(fire_companies: pandas.DataFrame, firehouses: pandas.DataFrame, output=True, opacity=1.0) -> None:
     """Plot the fire companies and firehouse locations on a choropleth mapbox map using plotly.
     (the firehouse locations are a scatter map added to the choropleth map)
 
-    if <output> is True, instead of calling fig.show(), will save the plotly graph into
-    the output directory as an html file.
+    if <output> is True, save the plotly graph into the output directory as an html file.
 
     Preconditions:
         - fire_companies is a valid dataframe of the fire companies
@@ -174,10 +165,9 @@ def plot_companies_and_firehouses(fire_companies: pandas.DataFrame, firehouses: 
     # Update title
     fig.update_layout({'title': 'Firehouses and Fire Company boundaries'})
 
+    fig.show()
     if output:
         fig.write_html(f'output/firehouses_and_companies_opacity_{int(opacity * 100)}_percent.html')
-    else:
-        fig.show()
 
 
 def plot_companies_and_response_times_animated(fire_companies_response_time: pandas.DataFrame,
@@ -189,8 +179,7 @@ def plot_companies_and_response_times_animated(fire_companies_response_time: pan
     Input data should have a column fora piece of data's month and year.
     Format of this column should be
 
-    if <output> is True, instead of calling fig.show(), will save the plotly graph into
-    the output directory as an html file.
+    if <output> is True, save the plotly graph into the output directory as an html file.
 
     Preconditions:
         - fire_companies_response_time is a valid dataframe of the fire companies
@@ -223,10 +212,9 @@ def plot_companies_and_response_times_animated(fire_companies_response_time: pan
                                zoom=9,
                                opacity=opacity)
 
+    fig.show()
     if output:
         fig.write_html(f'output/avg_response_time_opacity_{int(opacity * 100)}_percent.html', auto_play=False)
-    else:
-        fig.show()
 
 
 def _format_companies_for_plotly(fire_companies: pandas.DataFrame) -> dict:
