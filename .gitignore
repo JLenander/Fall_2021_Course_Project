@@ -2,6 +2,8 @@
 data/*
 !data/processed
 venv/
-output/
+output/*
+!output/avg_response_time_plots.zip
+!output/extra_info_plots.zip
 other_links.txt
 __pycache__
