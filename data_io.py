@@ -85,8 +85,10 @@ def load_incidents(filename='data/Fire_Incident_Dispatch_2016_to_2021.csv') -> p
         axis='columns', func=lambda row: _generate_alarm_box_code(row.alarm_box_borough, row.alarm_box_number))
 
     # drop some unneeded columns
-    incidents = incidents.drop(axis='columns', labels=['policeprecinct', 'citycouncildistrict', 'communitydistrict', 'communityschooldistrict',
-                               'congressionaldistrict', 'dispatch_response_seconds_qy', 'valid_dispatch_rspns_time_indc', 'valid_incident_rspns_time_indc'])
+    incidents = incidents.drop(axis='columns', labels=['policeprecinct', 'citycouncildistrict', 'communitydistrict',
+                                                       'communityschooldistrict', 'congressionaldistrict',
+                                                       'dispatch_response_seconds_qy', 'valid_dispatch_rspns_time_indc',
+                                                       'valid_incident_rspns_time_indc'])
 
     # ensure incidents sorted by incident_datetime
     incidents = incidents.sort_values('incident_datetime', ignore_index=True)
@@ -123,7 +125,7 @@ def load_firehouse_data() -> pandas.DataFrame:
 
     # Drop some uneeded columns
     firehouses = firehouses.drop(axis='columns', labels=['community_board',
-                                'community_council', 'census_tract', 'bin', 'bbl'])
+                                 'community_council', 'census_tract', 'bin', 'bbl'])
 
     # Rename a few columns for consistency
     firehouses.rename({'facilityaddress': 'address', 'postcode': 'zipcode',

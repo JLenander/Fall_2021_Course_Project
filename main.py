@@ -22,8 +22,8 @@ def main():
     incidents = data_io.load_incidents()
 
     # Start and End bounds for the data range. Start bound is inclusive, end bound is exclusive.
-    start_date = datetime(2018,4,1)
-    end_date = datetime(2021,5,1) # Incident data only available until 2021/05/06
+    start_date = datetime(2018, 4, 1)
+    end_date = datetime(2021, 5, 1)  # Incident data only available until 2021/05/06
 
     # Dict mapping month to alarm box response dataframe
     alarm_box_response = {}
@@ -40,7 +40,7 @@ def main():
     company_responses = {}
     for date in alarm_box_response:
         company_responses[date] = process_data.calc_companies_response_time(fire_companies, alarm_box_response[date], company_to_boxes)
-    
+
     # Concatenate the results into one dataframe with a date column
     company_responses_by_month = process_data.concat_company_responses(company_responses)
 

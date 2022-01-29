@@ -11,7 +11,8 @@ import pandas
 from shapely.geometry import MultiPolygon, Point, Polygon
 
 
-def get_response_time_per_alarm_box(incidents: pandas.DataFrame, alarm_boxes: pandas.DataFrame, start=datetime(2016, 1, 1), end=datetime(2021, 5, 6)) -> pandas.DataFrame:
+def get_response_time_per_alarm_box(incidents: pandas.DataFrame, alarm_boxes: pandas.DataFrame,
+                                    start=datetime(2016, 1, 1), end=datetime(2021, 5, 6)) -> pandas.DataFrame:
     """Extract the sum of the response times (in seconds) for each alarm box in alarm_boxes
     restrict data to times after <start> and before <end>.
     <start> bound is inclusive
@@ -35,14 +36,14 @@ def get_response_time_per_alarm_box(incidents: pandas.DataFrame, alarm_boxes: pa
 
     for incident in incidents_in_range.itertuples():
         code = incident.alarm_box_code
-        
+
         # Ignore alarm boxes we do not have location data for
         if code in incident_count:
             incident_count[code] += 1
             incident_rspns_sum[code] += incident.incident_response_seconds_qy
 
     alarm_box_response = pandas.DataFrame({'alarm_box_code': alarm_boxes.alarm_box_code, 'alarm_box_location': alarm_boxes.alarm_box_location,
-                                    'latitude': alarm_boxes.latitude, 'longitude': alarm_boxes.longitude, 'incident_count': incident_count.values, 
+                                    'latitude': alarm_boxes.latitude, 'longitude': alarm_boxes.longitude, 'incident_count': incident_count.values,
                                     'response_time_sum': incident_rspns_sum.values})
 
     return alarm_box_response
@@ -74,7 +75,7 @@ def remove_outliers_companies_response(companies_response: pandas.DataFrame) -> 
     upper_bound_indices = companies_response.loc[companies_response.response_times > 2500.0].index
 
     companies_response = companies_response.drop(lower_bound_indices)
-    companies_response = companies_response.drop(upper_bound_indices)    
+    companies_response = companies_response.drop(upper_bound_indices)
 
     return companies_response
 
@@ -95,7 +96,7 @@ def convert_geojson_to_shapely(multipolygon: dict) -> MultiPolygon:
 
 
 def calc_companies_response_time(fire_companies: pandas.DataFrame, alarm_box_response: pandas.DataFrame,
-    company_to_boxes: dict[str, list[str]]) -> pandas.DataFrame:
+                                 company_to_boxes: dict[str, list[str]]) -> pandas.DataFrame:
     """Calculate the average response time for each fire company
     Returns a copy of fire_companies with a new column for average response time and a new column
     for the number of incidents recorded for that company.
@@ -113,8 +114,8 @@ def calc_companies_response_time(fire_companies: pandas.DataFrame, alarm_box_res
             located within that company. See map_companies_to_alarm_boxes
     """
     # DataFrame connecting company name to the average response times for the company and to incident counts.
-    company_response_times = pandas.DataFrame(data={'response_times': 0.0, 'incident_count': 0}, 
-                    index=list(company_to_boxes.keys()), columns=['response_times', 'incident_count'])
+    company_response_times = pandas.DataFrame(data={'response_times': 0.0, 'incident_count': 0},
+                                              index=list(company_to_boxes.keys()), columns=['response_times', 'incident_count'])
 
     for company_name in company_to_boxes:
         # The segment of the alarm box response times corresponding to the company
@@ -125,7 +126,7 @@ def calc_companies_response_time(fire_companies: pandas.DataFrame, alarm_box_res
         if company_response_segment.response_time_sum.sum() > 0:
             avg_time = company_response_segment.response_time_sum.sum() / company_response_segment.incident_count.sum()
             company_response_times.response_times.at[company_name] = avg_time
-        
+
         company_response_times.incident_count.at[company_name] = company_response_segment.incident_count.sum()
 
     firehouse_copy = fire_companies.copy()
@@ -209,7 +210,7 @@ def concat_company_responses(companies_response_by_month: dict[datetime, pandas.
 
     for date in companies_response_by_month:
         # A new column 'date' containing *date* is added to the dataframe pointed to by *date*
-        # *date* is a datetime object 
+        # *date* is a datetime object
         companies_response_by_month[date]['date'] = date
-    
+
     return pandas.concat([companies_response_by_month[date] for date in companies_response_by_month], ignore_index=True)

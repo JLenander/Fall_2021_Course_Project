@@ -37,7 +37,7 @@ def plot_firehouses(firehouses: pandas.DataFrame, output=True) -> None:
 
 def plot_alarm_boxes(alarm_boxes: pandas.DataFrame, output=True) -> None:
     """Plot the alarm boxes on a scatter mapbox using plotly
-    
+
     if <output> is True, instead of calling fig.show(), will save the plotly graph into
     the output directory as an html file.
 
@@ -52,7 +52,7 @@ def plot_alarm_boxes(alarm_boxes: pandas.DataFrame, output=True) -> None:
                             hover_name='alarm_box_code',
                             hover_data=['alarm_box_code', 'alarm_box_location'],
                             zoom=10)
-    
+
     if output:
         fig.write_html('output/alarm_boxes.html')
     else:
@@ -123,14 +123,16 @@ def plot_companies_and_alarm_boxes(fire_companies: pandas.DataFrame, alarm_boxes
     fig = _get_companies_plot(fire_companies, opacity)
 
     # Custom data for the hover information on the alarm box trace.
-    # array is parallel to the alarm_boxes dataframe and contains 
+    # array is parallel to the alarm_boxes dataframe and contains
     # alarm_box_code and alarm box location for each alarm box
     customdata = [[alarm_boxes.alarm_box_code.iat[i], alarm_boxes.alarm_box_location.iat[i]]
                   for i in range(len(alarm_boxes))]
 
-    fig.add_scattermapbox(customdata=customdata, 
+    fig.add_scattermapbox(customdata=customdata,
                           lat=alarm_boxes.latitude, lon=alarm_boxes.longitude, mode='markers',
-                          hovertemplate='<b>%{customdata[0]}</b><br><br>latitude=%{lat}<br>longitude=%{lon}<br>alarm_box_code=%{customdata[0]}<br>alarm_box_location=%{customdata[1]}<extra></extra>',
+                          hovertemplate=('<b>%{customdata[0]}</b><br><br>latitude=%{lat}<br>'
+                                         'longitude=%{lon}<br>alarm_box_code=%{customdata[0]}'
+                                         '<br>alarm_box_location=%{customdata[1]}<extra></extra>'),
                           marker_size=5, marker_color='rgb(0,0,0)', name='Alarm Boxes')
 
     # Update titel
@@ -156,14 +158,17 @@ def plot_companies_and_firehouses(fire_companies: pandas.DataFrame, firehouses: 
     fig = _get_companies_plot(fire_companies, opacity)
 
     # Custom data for the hover information on the alarm box trace.
-    # array is parallel to the firehouses dataframe and contains 
+    # array is parallel to the firehouses dataframe and contains
     # facilityname, address, zipcode, and neighborhood for each firehouse
     customdata = [[firehouses.facilityname.iat[i], firehouses.address.iat[i], firehouses.zipcode.iat[i],
                   firehouses.neighborhood.iat[i]] for i in range(len(firehouses))]
 
     fig.add_scattermapbox(customdata=customdata,
                           lat=firehouses.latitude, lon=firehouses.longitude, mode='markers',
-                          hovertemplate='<b>%{customdata[0]}</b><br><br>latitude=%{lat}<br>longitude=%{lon}<br>address=%{customdata[1]}<br>zipcode=%{customdata[2]}<br>neighborhood=%{customdata[3]}<extra></extra>',
+                          hovertemplate=('<b>%{customdata[0]}</b><br><br>latitude=%{lat}<br>'
+                                         'longitude=%{lon}<br>address=%{customdata[1]}<br>'
+                                         'zipcode=%{customdata[2]}<br>'
+                                         'neighborhood=%{customdata[3]}<extra></extra>'),
                           marker_size=6, marker_color='rgb(0,0,0)', name='Firehouses')
 
     # Update title
@@ -175,14 +180,14 @@ def plot_companies_and_firehouses(fire_companies: pandas.DataFrame, firehouses: 
         fig.show()
 
 
-def plot_companies_and_response_times_animated(fire_companies_response_time: pandas.DataFrame, 
-    fire_companies: pandas.DataFrame, output=True, opacity=1.0) -> None:
+def plot_companies_and_response_times_animated(fire_companies_response_time: pandas.DataFrame,
+                                               fire_companies: pandas.DataFrame, output=True, opacity=1.0) -> None:
     """Plot the fire companies and their average response times on a choropleth map.
 
     Separates the data by month using plotly's animation feature.
 
     Input data should have a column fora piece of data's month and year.
-    Format of this column should be 
+    Format of this column should be
 
     if <output> is True, instead of calling fig.show(), will save the plotly graph into
     the output directory as an html file.
