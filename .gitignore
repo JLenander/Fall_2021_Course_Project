@@ -1,6 +1,7 @@
 .vscode
 data/*
 !data/processed
+!data/In-Service_Alarm_Box_Locations.csv
 venv/
 output/*
 !output/avg_response_time_plots.zip
