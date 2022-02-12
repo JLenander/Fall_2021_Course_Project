@@ -5,7 +5,7 @@ Mapping the average response times for the Fire Department of the City of New Yo
 Pimarily uses **Plotly**, **Pandas**, and **Shapely** in **Python 3.9.6** to organize and calculate average incident response times by month
 separated by FDNY company divisions (boundaries for different units as given in [this dataset](https://data.cityofnewyork.us/Public-Safety/Fire-Companies/iiv7-jaj9 "OpenData FDNY Fire Company Boundaries")). Incident response data location is given in the form of alarm boxes (either FDNY physical or historical pull-alarm boxes located around intersections in nyc or private/nonphysical alarm boxes, like subway stations or businesses, connected to the FDNY system).
 
-Not intended to be a standalone app; You can either run the python main file or view the given output files in the [output directory](../tree/main/output "Go to output directory"). By default the code will pull from the preprocessed data in data/processed to generate the plots. See commented instructions for other options.
+Not intended to be a standalone app; You can either run the python main file or view the given output files in the [output directory](https://github.com/JLenander/CSC110_project/tree/main/output "Go to output directory"). By default the code will pull from the preprocessed data in data/processed to generate the plots. See commented instructions for other options.
 
 Due to geocoding limitations, not every incident in the dataset is represented as not every alarm box in incidents is still active and the dataset for the alarm boxes only shows active alarm box locations. From what I understand, bulk geocoding (figuring out the Longitude/Latitude based off of street intersections like "2nd ave & E 7th st") is not easy for free.
 
