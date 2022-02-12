@@ -19,8 +19,15 @@ def main():
     firehouses = data_io.load_firehouse_data()
     fire_companies = data_io.load_fire_companies_data()
     alarm_boxes = data_io.load_alarm_boxes()
-    # incidents = data_io.load_incidents()
 
+    ################################################################################
+    # Incident dataset is large. First, use request_incidents to downloa the data 
+    # into the ./data directory, then use load_incidents to load the data into a 
+    # dataframe. Highly recommended to get a free socrata app_token and using that 
+    # to download the incident data (site: https://opendata.cityofnewyork.us/)!
+    ################################################################################
+    # incidents = data_io.request_incidents()
+    # incidents = data_io.load_incidents()
 
     ################################################################################
     # Uncomment the following block as well as loading incidents in for processing
@@ -60,13 +67,16 @@ def main():
     # Above block processes data.
     ################################################################################
 
-
     # Load company_responses_by_month from file
     company_responses_by_month = data_io.load_data_frame('data/processed/company_responses_by_month.csv')
 
     # Optionally remove outliers in response data. This will leave holes in the map for regions with no data
     company_responses_by_month = process_data.remove_outliers_companies_response(company_responses_by_month)
 
+    ################################################################################
+    # Optionally change the boolean to enable saving files and change the
+    # opacity of the company boundaries.
+    ################################################################################
     plot_data.plot_companies_and_response_times_animated(company_responses_by_month, fire_companies, False)
     plot_data.plot_companies_and_firehouses(fire_companies, firehouses, False)
     plot_data.plot_companies_and_alarm_boxes(fire_companies, alarm_boxes, False)
