@@ -80,6 +80,10 @@ def load_incidents(filename='data/Fire_Incident_Dispatch_2016_to_2021.csv') -> p
     incidents['incident_datetime'] = incidents.apply(
         axis='columns', func=lambda row: datetime.fromisoformat(row.incident_datetime))
 
+    # some zip codes are missing which is inferred as NaN but this forces zipcodes to be type float64.
+    # convert NaNs to -1 so zipcodes are just int64
+    incidents.zipcode.fillna(-1, inplace=True, downcast='int64')
+
     # generate the alarm_box_code from the alarm_box_borough and the alarm_box_number
     incidents['alarm_box_code'] = incidents.apply(
         axis='columns', func=lambda row: _generate_alarm_box_code(row.alarm_box_borough, row.alarm_box_number))
