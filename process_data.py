@@ -42,9 +42,14 @@ def get_response_time_per_alarm_box(incidents: pandas.DataFrame, alarm_boxes: pa
             incident_count[code] += 1
             incident_rspns_sum[code] += incident.incident_response_seconds_qy
 
-    alarm_box_response = pandas.DataFrame({'alarm_box_code': alarm_boxes.alarm_box_code, 'alarm_box_location': alarm_boxes.alarm_box_location,
-                                    'latitude': alarm_boxes.latitude, 'longitude': alarm_boxes.longitude, 'incident_count': incident_count.values,
-                                    'response_time_sum': incident_rspns_sum.values})
+    alarm_box_response = pandas.DataFrame({
+        'alarm_box_code': alarm_boxes.alarm_box_code,
+        'alarm_box_location': alarm_boxes.alarm_box_location,
+        'latitude': alarm_boxes.latitude,
+        'longitude': alarm_boxes.longitude,
+        'incident_count': incident_count.values,
+        'response_time_sum': incident_rspns_sum.values
+    })
 
     return alarm_box_response
 
