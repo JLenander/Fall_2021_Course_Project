@@ -9,7 +9,7 @@ Not intended to be a standalone app; You can either run the python main file or 
 
 Due to geocoding limitations, not every incident in the dataset is represented as not every alarm box in incidents is still active and the dataset for the alarm boxes only shows active alarm box locations. From what I understand, bulk geocoding (figuring out the Longitude/Latitude based off of street intersections like "2nd ave & E 7th st") is not easy for free.
 
-Data from the [NYC Open Data portal](https://opendata.cityofnewyork.us/).
+Data from the [NYC Open Data portal](https://opendata.cityofnewyork.us/). Project processes 4,000,000+ lines of data.
 
 # Sample Plots:
 ### Alarm Box Locations
