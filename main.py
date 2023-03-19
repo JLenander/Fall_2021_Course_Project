@@ -21,7 +21,7 @@ def main():
     alarm_boxes = data_io.load_alarm_boxes()
 
     ################################################################################
-    # Incident dataset is large. First, use request_incidents to downloa the data 
+    # Incident dataset is large. First, use request_incidents to download the data
     # into the ./data directory, then use load_incidents to load the data into a 
     # dataframe. Highly recommended to get a free socrata app_token and using that 
     # to download the incident data (site: https://opendata.cityofnewyork.us/)!

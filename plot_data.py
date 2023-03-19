@@ -128,7 +128,7 @@ def plot_companies_and_alarm_boxes(fire_companies: pandas.DataFrame, alarm_boxes
                                          '<br>alarm_box_location=%{customdata[1]}<extra></extra>'),
                           marker_size=5, marker_color='rgb(0,0,0)', name='Alarm Boxes')
 
-    # Update titel
+    # Update title
     fig.update_layout({'title': 'Fire Company boundaries and Alarm Box locations'})
 
     fig.show()
@@ -220,7 +220,7 @@ def plot_companies_and_response_times_animated(fire_companies_response_time: pan
 def _format_companies_for_plotly(fire_companies: pandas.DataFrame) -> dict:
     """Formats the geojson to be within a FeatureCollection
 
-    Each MultiPolygon dictionary is within a Feature dicionary.
+    Each MultiPolygon dictionary is within a Feature dictionary.
     Each Feature Dictionary has properties and is within the FeatureCollection dictionary
 
     The id plotly uses will be part of the features property

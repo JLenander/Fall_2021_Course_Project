@@ -33,7 +33,7 @@ def request_incidents(app_token='', filename='data/Fire_Incident_Dispatch_2016_t
 
     Filters to be between jan 1st 2016 to may 5th 2021 (data is only available up to may 5th)
     Free app token optional for lower throttling limit
-    (Highly recommend calling this iwth an app token, otherwise it would take too long)
+    (Highly recommend calling this with an app token, otherwise it would take too long)
 
     Returns whether the operation was successful
 
@@ -127,7 +127,7 @@ def load_firehouse_data() -> pandas.DataFrame:
     url = 'https://data.cityofnewyork.us/resource/hc8x-tcnd.json'
     firehouses = pandas.read_json(url)
 
-    # Drop some uneeded columns
+    # Drop some unneeded columns
     firehouses = firehouses.drop(axis='columns', labels=['community_board',
                                  'community_council', 'census_tract', 'bin', 'bbl'])
 
